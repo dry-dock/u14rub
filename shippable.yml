@@ -1,5 +1,41 @@
 language: python
 
-install: true
+python:
+    - 2.7
 
-script: true
+build:
+  pre_ci:
+    # Always pull the latest base image to avoid any cached images on the host
+    - docker pull drydock/u14:prod
+    - docker build --rm -t drydock/u14rub:tip .
+
+  pre_ci_boot:
+    image_name: drydock/u14rub
+    image_tag: tip
+    pull: false
+
+  ci:
+    # We can add sanity checks to ensure the image was built successfully here
+    - . /usr/local/rvm/scripts/rvm
+    - rvm ls
+    - rvm use jruby-1.7.19
+    - rvm use jruby-9.0.0
+    - rvm use ree-1.8.7
+    - rvm use 1.8.7
+    - rvm use 1.9.2
+    - rvm use 1.9.3
+    - rvm use 2.0.0
+    - rvm use 2.1.2
+    - rvm use 2.1.3
+    - rvm use 2.1.4
+    - rvm use 2.1.5
+    - rvm use 2.2.0
+    - rvm use 2.2.1
+
+  on_success:
+    - if [ "$IS_PULL_REQUEST" != true ]; then docker push drydock/u14rub:tip; fi
+
+integrations:
+  hub:
+    - integrationName: "dockerhub"
+      type: "docker"
